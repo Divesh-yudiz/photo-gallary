@@ -2,7 +2,47 @@ import React, { useRef, useEffect } from 'react'
 import { useGLTF } from '@react-three/drei'
 import { RigidBody, CylinderCollider } from '@react-three/rapier'
 
-function LampWithSpotlight({ geometry, material, position }) {
+const LAMP_CONFIG = [
+    { key: 'Lamp_Lamp_0', pos: [-6.657, 0, 3.69] },
+    { key: 'Lamp_Lamp_0001', pos: [-6.43, -1.723, 3.69] },
+    { key: 'Lamp_Lamp_0002', pos: [-5.765, -3.329, 3.69] },
+    { key: 'Lamp_Lamp_0003', pos: [-4.707, -4.707, 3.69] },
+    { key: 'Lamp_Lamp_0004', pos: [-3.329, -5.765, 3.69] },
+    { key: 'Lamp_Lamp_0005', pos: [-1.723, -6.43, 3.69] },
+    { key: 'Lamp_Lamp_0006', pos: [0, -6.657, 3.69] },
+    { key: 'Lamp_Lamp_0007', pos: [1.723, -6.43, 3.69] },
+    { key: 'Lamp_Lamp_0008', pos: [3.329, -5.765, 3.69] },
+    { key: 'Lamp_Lamp_0009', pos: [4.707, -4.707, 3.69] },
+    { key: 'Lamp_Lamp_0010', pos: [5.765, -3.328, 3.69] },
+    { key: 'Lamp_Lamp_0011', pos: [6.43, -1.723, 3.69] },
+    { key: 'Lamp_Lamp_0012', pos: [6.657, 0, 3.69] },
+    { key: 'Lamp_Lamp_0013', pos: [6.43, 1.723, 3.69] },
+    { key: 'Lamp_Lamp_0014', pos: [5.765, 3.328, 3.69] },
+    { key: 'Lamp_Lamp_0015', pos: [4.707, 4.707, 3.69] },
+    { key: 'Lamp_Lamp_0016', pos: [3.328, 5.765, 3.69] },
+    { key: 'Lamp_Lamp_0017', pos: [1.723, 6.43, 3.69] },
+    { key: 'Lamp_Lamp_0018', pos: [0, 6.657, 3.69] },
+    { key: 'Lamp_Lamp_0019', pos: [-1.723, 6.43, 3.69] },
+    { key: 'Lamp_Lamp_0020', pos: [-3.328, 5.765, 3.69] },
+    { key: 'Lamp_Lamp_0021', pos: [-4.707, 4.707, 3.69] },
+    { key: 'Lamp_Lamp_0022', pos: [-5.765, 3.328, 3.69] },
+    { key: 'Lamp_Lamp_0023', pos: [-6.43, 1.723, 3.69] },
+]
+
+const SPOTLIGHT_INDICES = [0, 3, 6, 9, 12, 15, 18, 21]
+
+const SPOTLIGHT_INTENSITY = {
+    0: 30,
+    3: 15.5,
+    6: 30,
+    9: 15.5,
+    12: 30,
+    15: 15,
+    18: 30,
+    21: 15,
+}
+
+function LampWithSpotlight({ geometry, material, position, intensity = 10 }) {
     const lightRef = useRef()
     const targetRef = useRef()
 
@@ -26,9 +66,9 @@ function LampWithSpotlight({ geometry, material, position }) {
             <spotLight
                 ref={lightRef}
                 position={[x, y, z]}
-                angle={0.4}
-                penumbra={0.005}
-                intensity={10}
+                angle={0.6}
+                penumbra={0.08}
+                intensity={intensity}
                 distance={7}
                 decay={1}
                 color={'#ffd9b3'}
@@ -42,6 +82,7 @@ function LampWithSpotlight({ geometry, material, position }) {
 
 export function Model(props) {
     const { nodes, materials } = useGLTF('/gallary-1.glb')
+
     return (
         <group {...props} dispose={null}>
             <group scale={0.01}>
@@ -110,57 +151,26 @@ export function Model(props) {
                         geometry={nodes.Lamp_Emissive_0.geometry}
                         material={materials.Emissive}
                     />
-
-                    {/* Only a few lamps get real spotlights for performance */}
-                    <LampWithSpotlight
-                        geometry={nodes.Lamp_Lamp_0.geometry}
-                        material={materials.Lamp}
-                        position={[-6.657, 0, 3.69]}
-                    />
-                    <LampWithSpotlight
-                        geometry={nodes.Lamp_Lamp_0006.geometry}
-                        material={materials.Lamp}
-                        position={[0, -6.657, 3.69]}
-                    />
-                    <LampWithSpotlight
-                        geometry={nodes.Lamp_Lamp_0012.geometry}
-                        material={materials.Lamp}
-                        position={[6.657, 0, 3.69]}
-                    />
-                    <LampWithSpotlight
-                        geometry={nodes.Lamp_Lamp_0018.geometry}
-                        material={materials.Lamp}
-                        position={[0, 6.657, 3.69]}
-                    />
-                    <LampWithSpotlight
-                        geometry={nodes.Lamp_Lamp_0023.geometry}
-                        material={materials.Lamp}
-                        position={[-6.43, 1.723, 3.69]}
-                    />
-
-                    {/* Remaining lamps render normally without individual spotlights */}
-                    <mesh geometry={nodes.Lamp_Lamp_0001.geometry} material={materials.Lamp} position={[-6.43, -1.723, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0002.geometry} material={materials.Lamp} position={[-5.765, -3.329, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0003.geometry} material={materials.Lamp} position={[-4.707, -4.707, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0004.geometry} material={materials.Lamp} position={[-3.329, -5.765, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0005.geometry} material={materials.Lamp} position={[-1.723, -6.43, 3.69]} />
-
-                    <mesh geometry={nodes.Lamp_Lamp_0007.geometry} material={materials.Lamp} position={[1.723, -6.43, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0008.geometry} material={materials.Lamp} position={[3.329, -5.765, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0009.geometry} material={materials.Lamp} position={[4.707, -4.707, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0010.geometry} material={materials.Lamp} position={[5.765, -3.328, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0011.geometry} material={materials.Lamp} position={[6.43, -1.723, 3.69]} />
-
-                    <mesh geometry={nodes.Lamp_Lamp_0013.geometry} material={materials.Lamp} position={[6.43, 1.723, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0014.geometry} material={materials.Lamp} position={[5.765, 3.328, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0015.geometry} material={materials.Lamp} position={[4.707, 4.707, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0016.geometry} material={materials.Lamp} position={[3.328, 5.765, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0017.geometry} material={materials.Lamp} position={[1.723, 6.43, 3.69]} />
-
-                    <mesh geometry={nodes.Lamp_Lamp_0019.geometry} material={materials.Lamp} position={[-1.723, 6.43, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0020.geometry} material={materials.Lamp} position={[-3.328, 5.765, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0021.geometry} material={materials.Lamp} position={[-4.707, 4.707, 3.69]} />
-                    <mesh geometry={nodes.Lamp_Lamp_0022.geometry} material={materials.Lamp} position={[-5.765, 3.328, 3.69]} />
+                    {LAMP_CONFIG.map(({ key, pos }, i) =>
+                        SPOTLIGHT_INDICES.includes(i) ? (
+                            <LampWithSpotlight
+                                key={key}
+                                geometry={nodes[key].geometry}
+                                material={materials.Lamp}
+                                position={pos}
+                                intensity={SPOTLIGHT_INTENSITY[i]}
+                            />
+                        ) : (
+                            <mesh
+                                key={key}
+                                castShadow
+                                receiveShadow
+                                geometry={nodes[key].geometry}
+                                material={materials.Lamp}
+                                position={pos}
+                            />
+                        )
+                    )}
                 </group>
                 <group rotation={[-Math.PI / 2, 0, 0]} scale={[50, 50, 22.5]}>
                     <mesh
