@@ -6,6 +6,15 @@ import { useEffect, useRef, useState } from "react";
 import { MathUtils, Vector3 } from "three";
 import { degToRad } from "three/src/math/MathUtils.js";
 import { Character } from "./Character";
+import { paintingFocus, playerPosition } from "./playerStore";
+
+const CAM_HEIGHT = 0.55;
+const CAM_DISTANCE = 1.45;
+const LOOK_AT_Y = 0.5;
+const LOOK_AT_Z = 2.55;
+const FOLLOW_LERP = 0.13;
+const LOOK_LERP = 0.13;
+const FOCUS_LERP = 0.04;
 
 const normalizeAngle = (angle) => {
   while (angle > Math.PI) angle -= 2 * Math.PI;
@@ -42,6 +51,7 @@ export const CharacterController = () => {
       },
     }
   );
+
   const rb = useRef();
   const container = useRef();
   const character = useRef();
@@ -60,15 +70,14 @@ export const CharacterController = () => {
   const jumpLatch = useRef(false);
 
   useEffect(() => {
-    const onMouseDown = (e) => {
+    const onMouseDown = () => {
       isClicking.current = true;
     };
-    const onMouseUp = (e) => {
+    const onMouseUp = () => {
       isClicking.current = false;
     };
     document.addEventListener("mousedown", onMouseDown);
     document.addEventListener("mouseup", onMouseUp);
-    // touch
     document.addEventListener("touchstart", onMouseDown);
     document.addEventListener("touchend", onMouseUp);
     return () => {
@@ -83,6 +92,7 @@ export const CharacterController = () => {
     if (rb.current) {
       const vel = rb.current.linvel();
       const t = rb.current.translation();
+      playerPosition.set(t.x, t.y, t.z);
 
       const movement = {
         x: 0,
@@ -99,7 +109,6 @@ export const CharacterController = () => {
       let speed = get().run ? RUN_SPEED : WALK_SPEED;
 
       if (isClicking.current) {
-        console.log("clicking", mouse.x, mouse.y);
         if (Math.abs(mouse.x) > 0.1) {
           movement.x = -mouse.x;
         }
@@ -134,6 +143,8 @@ export const CharacterController = () => {
           setAnimation("walk");
         }
       } else {
+        vel.x = 0;
+        vel.z = 0;
         setAnimation("idle");
       }
       character.current.rotation.y = lerpAngle(
@@ -165,7 +176,14 @@ export const CharacterController = () => {
       rb.current.setLinvel(vel, true);
     }
 
-    // CAMERA
+    // CAMERA — painting focus overrides follow-cam while standing on a torus
+    if (paintingFocus.active) {
+      camera.position.lerp(paintingFocus.cameraPos, FOCUS_LERP);
+      cameraLookAt.current.lerp(paintingFocus.lookAt, FOCUS_LERP);
+      camera.lookAt(cameraLookAt.current);
+      return;
+    }
+
     container.current.rotation.y = MathUtils.lerp(
       container.current.rotation.y,
       rotationTarget.current,
@@ -173,21 +191,25 @@ export const CharacterController = () => {
     );
 
     cameraPosition.current.getWorldPosition(cameraWorldPosition.current);
-    camera.position.lerp(cameraWorldPosition.current, 0.1);
+    camera.position.lerp(cameraWorldPosition.current, FOLLOW_LERP);
 
     if (cameraTarget.current) {
       cameraTarget.current.getWorldPosition(cameraLookAtWorldPosition.current);
-      cameraLookAt.current.lerp(cameraLookAtWorldPosition.current, 0.1);
+      cameraLookAt.current.lerp(cameraLookAtWorldPosition.current, LOOK_LERP);
 
       camera.lookAt(cameraLookAt.current);
     }
   });
 
   return (
-    <RigidBody colliders={false} lockRotations ref={rb}>
+    <RigidBody colliders={false} lockRotations ref={rb} position={[0, 0.5, 3]} name="player">
       <group ref={container}>
-        <group ref={cameraTarget} position-z={1.5} />
-        <group ref={cameraPosition} position-y={1} position-z={-2} />
+        <group ref={cameraTarget} position-y={LOOK_AT_Y} position-z={LOOK_AT_Z} />
+        <group
+          ref={cameraPosition}
+          position-y={CAM_HEIGHT}
+          position-z={-CAM_DISTANCE}
+        />
         <group ref={character}>
           <Character scale={0.18} position-y={-0.25} position-x={0.1} animation={animation} />
         </group>

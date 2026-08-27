@@ -17,8 +17,8 @@ export const Experience = () => {
   return (
     <Suspense fallback={null}>
       {/* <Environment preset="warehouse" intensity={0.2} /> */}
-      <ambientLight intensity={2} />
-      <directionalLight position={[10, 10, 10]} intensity={2} />
+      {/* <ambientLight intensity={2} /> */}
+      {/* <directionalLight position={[10, 10, 10]} intensity={2} /> */}
       {/* <OrbitControls enableDamping dampingFactor={0.06} rotateSpeed={0.4} /> */}
       <KeyboardControls map={keyboardMap}>
         <Physics colliders={false}>
